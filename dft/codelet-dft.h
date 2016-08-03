@@ -66,7 +66,7 @@ typedef struct ct_desc_s ct_desc;
 typedef struct {
      int (*okp)(
 	  const struct ct_desc_s *desc,
-	  const R *rio, const R *iio, 
+	  const R *rio, const R *iio,
 	  INT rs, INT vs, INT m, INT mb, INT me, INT ms,
 	  const planner *plnr);
      INT vl;
@@ -83,14 +83,14 @@ struct ct_desc_s {
      INT ms;
 };
 
-typedef void (*kdftw) (R *rioarray, R *iioarray, const R *W,
+typedef void (*kdftw) (R *rioarray, R *iioarray, const TWR *W,
 		       stride ios, INT mb, INT me, INT ms);
 void X(kdft_dit_register)(planner *p, kdftw codelet, const ct_desc *desc);
 void X(kdft_dif_register)(planner *p, kdftw codelet, const ct_desc *desc);
 
 
 typedef void (*kdftwsq) (R *rioarray, R *iioarray,
-			 const R *W, stride is, stride vs,
+			 const TWR *W, stride is, stride vs,
 			 INT mb, INT me, INT ms);
 void X(kdft_difsq_register)(planner *p, kdftwsq codelet, const ct_desc *desc);
 

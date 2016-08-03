@@ -100,7 +100,7 @@ static void apply(const plan *ego_, R *ri, R *ii, R *ro, R *io)
      R *buf;
      R r0 = ri[0], i0 = ii[0];
 
-     r = ego->n; is = ego->is; os = ego->os; g = ego->g; 
+     r = ego->n; is = ego->is; os = ego->os; g = ego->g;
      buf = (R *) MALLOC(sizeof(R) * (r - 1) * 2, BUFFERS);
 
      /* First, permute the input, storing in buf: */
@@ -138,7 +138,7 @@ static void apply(const plan *ego_, R *ri, R *ii, R *ro, R *io)
 	       io[(k+1)*os] = -(rW * iB + iW * rB);
 	  }
      }
-     
+
      /* this will add input[0] to all of the outputs after the ifft */
      ro[os] += r0;
      io[os] -= i0;
@@ -148,7 +148,7 @@ static void apply(const plan *ego_, R *ri, R *ii, R *ro, R *io)
 	    plan_dft *cld = (plan_dft *) ego->cld2;
 	    cld->apply(ego->cld2, ro+os, io+os, buf, buf+1);
      }
-     
+
      /* finally, do inverse permutation to unshuffle the output: */
      {
 	  INT ginv = ego->ginv;
@@ -238,14 +238,14 @@ static int mkP(P *pln, INT n, INT is, INT os, R *ro, R *io,
      /* initial allocation for the purpose of planning */
      buf = (R *) MALLOC(sizeof(R) * (n - 1) * 2, BUFFERS);
 
-     cld1 = X(mkplan_f_d)(plnr, 
+     cld1 = X(mkplan_f_d)(plnr,
 			  X(mkproblem_dft_d)(X(mktensor_1d)(n - 1, 2, os),
 					     X(mktensor_1d)(1, 0, 0),
 					     buf, buf + 1, ro + os, io + os),
 			  NO_SLOW, 0, 0);
      if (!cld1) goto nada;
 
-     cld2 = X(mkplan_f_d)(plnr, 
+     cld2 = X(mkplan_f_d)(plnr,
 			  X(mkproblem_dft_d)(X(mktensor_1d)(n - 1, os, 2),
 					     X(mktensor_1d)(1, 0, 0),
 					     ro + os, io + os, buf, buf + 1),
@@ -254,7 +254,7 @@ static int mkP(P *pln, INT n, INT is, INT os, R *ro, R *io,
      if (!cld2) goto nada;
 
      /* plan for omega array */
-     cld_omega = X(mkplan_f_d)(plnr, 
+     cld_omega = X(mkplan_f_d)(plnr,
 			       X(mkproblem_dft_d)(X(mktensor_1d)(n - 1, 2, 2),
 						  X(mktensor_1d)(1, 0, 0),
 						  buf, buf + 1, buf, buf + 1),

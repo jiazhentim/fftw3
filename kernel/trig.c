@@ -75,8 +75,8 @@ static void real_cexp(INT m, INT n, trigreal *out)
      if (octant & 2) { t = c; c = -s; s = t; }
      if (octant & 4) { s = -s; }
 
-     out[0] = c; 
-     out[1] = s; 
+     out[0] = c;
+     out[1] = s;
 }
 
 static INT choose_twshft(INT n)
@@ -136,7 +136,7 @@ static void cexpl_sincos(triggen *p, INT m, trigreal *res)
      real_cexp(m, p->n, res);
 }
 
-static void cexp_zero(triggen *p, INT m, R *res)
+static void cexp_zero(triggen *p, INT m, TWR *res)
 {
      UNUSED(p); UNUSED(m);
      res[0] = 0;
@@ -150,12 +150,12 @@ static void cexpl_zero(triggen *p, INT m, trigreal *res)
      res[1] = 0;
 }
 
-static void cexp_generic(triggen *p, INT m, R *res)
+static void cexp_generic(triggen *p, INT m, TWR *res)
 {
      trigreal resl[2];
      p->cexpl(p, m, resl);
-     res[0] = (R)resl[0];
-     res[1] = (R)resl[1];
+     res[0] = (TWR)resl[0];
+     res[1] = (TWR)resl[1];
 }
 
 static void rotate_generic(triggen *p, INT m, R xr, R xi, R *res)
@@ -194,10 +194,10 @@ triggen *X(mktriggen)(enum wakefulness wakefulness, INT n)
 	      p->W0 = (trigreal *)MALLOC(n0 * 2 * sizeof(trigreal), TWIDDLES);
 	      p->W1 = (trigreal *)MALLOC(n1 * 2 * sizeof(trigreal), TWIDDLES);
 
-	      for (i = 0; i < n0; ++i) 
+	      for (i = 0; i < n0; ++i)
 		   real_cexp(i, n, p->W0 + 2 * i);
 
-	      for (i = 0; i < n1; ++i) 
+	      for (i = 0; i < n1; ++i)
 		   real_cexp(i * p->twradix, n, p->W1 + 2 * i);
 
 	      p->cexpl = cexpl_sqrtn_table;
@@ -205,23 +205,23 @@ triggen *X(mktriggen)(enum wakefulness wakefulness, INT n)
 	      break;
 	 }
 
-	 case AWAKE_SINCOS: 
+	 case AWAKE_SINCOS:
 	      p->cexpl = cexpl_sincos;
 	      break;
 
-	 case AWAKE_ZERO: 
+	 case AWAKE_ZERO:
 	      p->cexp = cexp_zero;
 	      p->cexpl = cexpl_zero;
 	      break;
      }
 
      if (!p->cexp) {
-	  if (sizeof(trigreal) == sizeof(R))
-	       p->cexp = (void (*)(triggen *, INT, R *))p->cexpl;
+	  if (sizeof(trigreal) == sizeof(TWR))
+	       p->cexp = (void (*)(triggen *, INT, TWR *))p->cexpl;
 	  else
 	       p->cexp = cexp_generic;
      }
-     if (!p->rotate)     
+     if (!p->rotate)
 	       p->rotate = rotate_generic;
      return p;
 }

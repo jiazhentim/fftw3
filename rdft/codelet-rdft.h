@@ -39,7 +39,7 @@
 typedef enum {
      R2HC00, R2HC01, R2HC10, R2HC11,
      HC2R00, HC2R01, HC2R10, HC2R11,
-     DHT, 
+     DHT,
      REDFT00, REDFT01, REDFT10, REDFT11, /* real-even == DCT's */
      RODFT00, RODFT01, RODFT10, RODFT11  /*  real-odd == DST's */
 } rdft_kind;
@@ -99,7 +99,7 @@ struct hc2hc_desc_s {
      opcnt ops;
 };
 
-typedef void (*khc2hc) (R *rioarray, R *iioarray, const R *W,
+typedef void (*khc2hc) (R *rioarray, R *iioarray, const TWR *W,
 			stride rs, INT mb, INT me, INT ms);
 void X(khc2hc_register)(planner *p, khc2hc codelet, const hc2hc_desc *desc);
 
@@ -113,8 +113,8 @@ typedef enum {
 
 typedef struct {
      int (*okp)(
-	  const R *Rp, const R *Ip, const R *Rm, const R *Im, 
-	  INT rs, INT mb, INT me, INT ms, 
+	  const R *Rp, const R *Ip, const R *Rm, const R *Im,
+	  INT rs, INT mb, INT me, INT ms,
 	  const planner *plnr);
      rdft_kind kind;
      INT vl;
@@ -128,7 +128,7 @@ struct hc2c_desc_s {
      opcnt ops;
 };
 
-typedef void (*khc2c) (R *Rp, R *Ip, R *Rm, R *Im, const R *W,
+typedef void (*khc2c) (R *Rp, R *Ip, R *Rm, R *Im, const TWR *W,
 		       stride rs, INT mb, INT me, INT ms);
 void X(khc2c_register)(planner *p, khc2c codelet, const hc2c_desc *desc,
 		       hc2c_kind hc2ckind);

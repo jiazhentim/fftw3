@@ -4,7 +4,7 @@
  *
  * The following statement of license applies *only* to this header file,
  * and *not* to the other files distributed with FFTW or derived therefrom:
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -44,10 +44,11 @@
  *
  ****************************************************************************/
 
-#ifndef FFTW3_H
-#define FFTW3_H
+#ifndef ZFFTW3_H
+#define ZFFTW3_H
 
 #include <stdio.h>
+#include "../../avx/vectorclass.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -56,17 +57,13 @@ extern "C"
 
 /* If <complex.h> is included, use the C99 complex type.  Otherwise
    define a type bit-compatible with C99 complex */
-#if !defined(FFTW_NO_Complex) && defined(_Complex_I) && defined(complex) && defined(I)
-#  define FFTW_DEFINE_COMPLEX(R, C) typedef R _Complex C
-#else
 #  define FFTW_DEFINE_COMPLEX(R, C) typedef R C[2]
-#endif
 
 #define FFTW_CONCAT(prefix, name) prefix ## name
-#define FFTW_MANGLE_DOUBLE(name) FFTW_CONCAT(fftw_, name)
-#define FFTW_MANGLE_FLOAT(name) FFTW_CONCAT(fftwf_, name)
-#define FFTW_MANGLE_LONG_DOUBLE(name) FFTW_CONCAT(fftwl_, name)
-#define FFTW_MANGLE_QUAD(name) FFTW_CONCAT(fftwq_, name)
+#define FFTW_MANGLE_DOUBLE(name) FFTW_CONCAT(zfftw_, name)
+#define FFTW_MANGLE_FLOAT(name) FFTW_CONCAT(zfftwf_, name)
+#define FFTW_MANGLE_LONG_DOUBLE(name) FFTW_CONCAT(zfftwl_, name)
+#define FFTW_MANGLE_QUAD(name) FFTW_CONCAT(zfftwq_, name)
 
 /* IMPORTANT: for Windows compilers, you should add a line
         #define FFTW_DLL
@@ -78,40 +75,40 @@ extern "C"
 #if defined(FFTW_DLL) && (defined(_WIN32) || defined(__WIN32__))
    /* annoying Windows syntax for shared-library declarations */
 #  if defined(COMPILING_FFTW) /* defined in api.h when compiling FFTW */
-#    define FFTW_EXTERN extern __declspec(dllexport) 
+#    define FFTW_EXTERN extern __declspec(dllexport)
 #  else /* user is calling FFTW; import symbol */
-#    define FFTW_EXTERN extern __declspec(dllimport) 
+#    define FFTW_EXTERN extern __declspec(dllimport)
 #  endif
 #else
 #  define FFTW_EXTERN extern
 #endif
 
-enum fftw_r2r_kind_do_not_use_me {
+enum zfftw_r2r_kind_do_not_use_me {
      FFTW_R2HC=0, FFTW_HC2R=1, FFTW_DHT=2,
      FFTW_REDFT00=3, FFTW_REDFT01=4, FFTW_REDFT10=5, FFTW_REDFT11=6,
      FFTW_RODFT00=7, FFTW_RODFT01=8, FFTW_RODFT10=9, FFTW_RODFT11=10
 };
 
-struct fftw_iodim_do_not_use_me {
+struct zfftw_iodim_do_not_use_me {
      int n;                     /* dimension size */
      int is;			/* input stride */
      int os;			/* output stride */
 };
 
 #include <stddef.h> /* for ptrdiff_t */
-struct fftw_iodim64_do_not_use_me {
+struct zfftw_iodim64_do_not_use_me {
      ptrdiff_t n;                     /* dimension size */
      ptrdiff_t is;			/* input stride */
      ptrdiff_t os;			/* output stride */
 };
 
-typedef void (*fftw_write_char_func_do_not_use_me)(char c, void *);
-typedef int (*fftw_read_char_func_do_not_use_me)(void *);
+typedef void (*zfftw_write_char_func_do_not_use_me)(char c, void *);
+typedef int (*zfftw_read_char_func_do_not_use_me)(void *);
 
 /*
   huge second-order macro that defines prototypes for all API
   functions.  We expand this macro for each supported precision
- 
+
   X: name-mangling macro
   R: real data type
   C: complex data type
@@ -123,13 +120,13 @@ FFTW_DEFINE_COMPLEX(R, C);						   \
 									   \
 typedef struct X(plan_s) *X(plan);					   \
 									   \
-typedef struct fftw_iodim_do_not_use_me X(iodim);			   \
-typedef struct fftw_iodim64_do_not_use_me X(iodim64);			   \
+typedef struct zfftw_iodim_do_not_use_me X(iodim);			   \
+typedef struct zfftw_iodim64_do_not_use_me X(iodim64);			   \
 									   \
-typedef enum fftw_r2r_kind_do_not_use_me X(r2r_kind);			   \
+typedef enum zfftw_r2r_kind_do_not_use_me X(r2r_kind);			   \
 									   \
-typedef fftw_write_char_func_do_not_use_me X(write_char_func);		   \
-typedef fftw_read_char_func_do_not_use_me X(read_char_func);		   \
+typedef zfftw_write_char_func_do_not_use_me X(write_char_func);		   \
+typedef zfftw_read_char_func_do_not_use_me X(read_char_func);		   \
                                                                            \
 FFTW_EXTERN void X(execute)(const X(plan) p);                              \
 									   \
@@ -353,9 +350,9 @@ FFTW_EXTERN const char X(codelet_optim)[];
 
 /* end of FFTW_DEFINE_API macro */
 
-FFTW_DEFINE_API(FFTW_MANGLE_DOUBLE, double, fftw_complex)
-FFTW_DEFINE_API(FFTW_MANGLE_FLOAT, float, fftwf_complex)
-FFTW_DEFINE_API(FFTW_MANGLE_LONG_DOUBLE, long double, fftwl_complex)
+FFTW_DEFINE_API(FFTW_MANGLE_DOUBLE, double, zfftw_complex)
+FFTW_DEFINE_API(FFTW_MANGLE_FLOAT, Vec16f, zfftwf_complex)
+FFTW_DEFINE_API(FFTW_MANGLE_LONG_DOUBLE, long double, zfftwl_complex)
 
 /* __float128 (quad precision) is a gcc extension on i386, x86_64, and ia64
    for gcc >= 4.6 (compiled in FFTW with --enable-quad-precision) */
@@ -406,6 +403,7 @@ FFTW_DEFINE_API(FFTW_MANGLE_QUAD, __float128, fftwq_complex)
 #define FFTW_NO_FIXED_RADIX_LARGE_N (1U << 19)
 #define FFTW_ALLOW_PRUNING (1U << 20)
 
+FFTW_EXTERN void just_say_it(int x);
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif /* __cplusplus */

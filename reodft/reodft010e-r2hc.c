@@ -88,7 +88,7 @@ static void apply_re01(const plan *ego_, R *I, R *O)
      INT i, n = ego->n;
      INT iv, vl = ego->vl;
      INT ivs = ego->ivs, ovs = ego->ovs;
-     R *W = ego->td->W;
+     TWR *W = ego->td->W;
      R *buf;
 
      buf = (R *) MALLOC(sizeof(R) * n, BUFFERS);
@@ -103,18 +103,18 @@ static void apply_re01(const plan *ego_, R *I, R *O)
 	       amb = a - b;
 	       wa = W[2*i];
 	       wb = W[2*i + 1];
-	       buf[i] = wa * amb + wb * apb; 
-	       buf[n - i] = wa * apb - wb * amb; 
+	       buf[i] = wa * amb + wb * apb;
+	       buf[n - i] = wa * apb - wb * amb;
 	  }
 	  if (i == n - i) {
 	       buf[i] = K(2.0) * I[is * i] * W[2*i];
 	  }
-	  
+
 	  {
 	       plan_rdft *cld = (plan_rdft *) ego->cld;
 	       cld->apply((plan *) cld, buf, buf);
 	  }
-	  
+
 	  O[0] = buf[0];
 	  for (i = 1; i < n - i; ++i) {
 	       E a, b;
@@ -142,7 +142,7 @@ static void apply_ro01(const plan *ego_, R *I, R *O)
      INT i, n = ego->n;
      INT iv, vl = ego->vl;
      INT ivs = ego->ivs, ovs = ego->ovs;
-     R *W = ego->td->W;
+     TWR *W = ego->td->W;
      R *buf;
 
      buf = (R *) MALLOC(sizeof(R) * n, BUFFERS);
@@ -157,18 +157,18 @@ static void apply_ro01(const plan *ego_, R *I, R *O)
 	       amb = a - b;
 	       wa = W[2*i];
 	       wb = W[2*i+1];
-	       buf[i] = wa * amb + wb * apb; 
-	       buf[n - i] = wa * apb - wb * amb; 
+	       buf[i] = wa * amb + wb * apb;
+	       buf[n - i] = wa * apb - wb * amb;
 	  }
 	  if (i == n - i) {
 	       buf[i] = K(2.0) * I[is * (i - 1)] * W[2*i];
 	  }
-	  
+
 	  {
 	       plan_rdft *cld = (plan_rdft *) ego->cld;
 	       cld->apply((plan *) cld, buf, buf);
 	  }
-	  
+
 	  O[0] = buf[0];
 	  for (i = 1; i < n - i; ++i) {
 	       E a, b;
@@ -194,7 +194,7 @@ static void apply_re10(const plan *ego_, R *I, R *O)
      INT i, n = ego->n;
      INT iv, vl = ego->vl;
      INT ivs = ego->ivs, ovs = ego->ovs;
-     R *W = ego->td->W;
+     TWR *W = ego->td->W;
      R *buf;
 
      buf = (R *) MALLOC(sizeof(R) * n, BUFFERS);
@@ -212,12 +212,12 @@ static void apply_re10(const plan *ego_, R *I, R *O)
 	  if (i == n - i) {
 	       buf[i] = I[is * (n - 1)];
 	  }
-	  
+
 	  {
 	       plan_rdft *cld = (plan_rdft *) ego->cld;
 	       cld->apply((plan *) cld, buf, buf);
 	  }
-	  
+
 	  O[0] = K(2.0) * buf[0];
 	  for (i = 1; i < n - i; ++i) {
 	       E a, b, wa, wb;
@@ -245,7 +245,7 @@ static void apply_ro10(const plan *ego_, R *I, R *O)
      INT i, n = ego->n;
      INT iv, vl = ego->vl;
      INT ivs = ego->ivs, ovs = ego->ovs;
-     R *W = ego->td->W;
+     TWR *W = ego->td->W;
      R *buf;
 
      buf = (R *) MALLOC(sizeof(R) * n, BUFFERS);
@@ -263,12 +263,12 @@ static void apply_ro10(const plan *ego_, R *I, R *O)
 	  if (i == n - i) {
 	       buf[i] = -I[is * (n - 1)];
 	  }
-	  
+
 	  {
 	       plan_rdft *cld = (plan_rdft *) ego->cld;
 	       cld->apply((plan *) cld, buf, buf);
 	  }
-	  
+
 	  O[os * (n - 1)] = K(2.0) * buf[0];
 	  for (i = 1; i < n - i; ++i) {
 	       E a, b, wa, wb;
@@ -298,7 +298,7 @@ static void awake(plan *ego_, enum wakefulness wakefulness)
 
      X(plan_awake)(ego->cld, wakefulness);
 
-     X(twiddle_awake)(wakefulness, &ego->td, reodft010e_tw, 
+     X(twiddle_awake)(wakefulness, &ego->td, reodft010e_tw,
 		      4*ego->n, 1, ego->n/2+1);
 }
 
@@ -375,9 +375,9 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
      pln->cld = cld;
      pln->td = 0;
      pln->kind = p->kind[0];
-     
+
      X(tensor_tornk1)(p->vecsz, &pln->vl, &pln->ivs, &pln->ovs);
-     
+
      X(ops_zero)(&ops);
      ops.other = 4 + (n-1)/2 * 10 + (1 - n % 2) * 5;
      if (p->kind[0] == REDFT01 || p->kind[0] == RODFT01) {
@@ -388,7 +388,7 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
 	  ops.add = (n-1)/2 * 2;
 	  ops.mul = 1 + (n-1)/2 * 6 + (1 - n % 2) * 2;
      }
-     
+
      X(ops_zero)(&pln->super.super.ops);
      X(ops_madd2)(pln->vl, &ops, &pln->super.super.ops);
      X(ops_madd2)(pln->vl, &cld->ops, &pln->super.super.ops);

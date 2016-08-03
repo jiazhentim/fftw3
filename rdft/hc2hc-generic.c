@@ -42,7 +42,7 @@ static void mktwiddle(P *ego, enum wakefulness wakefulness)
 
      /* note that R and M are swapped, to allow for sequential
 	access both to data and twiddles */
-     X(twiddle_awake)(wakefulness, &ego->td, tw, 
+     X(twiddle_awake)(wakefulness, &ego->td, tw,
 		      ego->r * ego->m, ego->m, ego->r);
 }
 
@@ -55,7 +55,7 @@ static void bytwiddle(const P *ego, R *IO, R sign)
      INT wrem = 2 * ((m-1)/2 - mcount1);
 
      for (i = 0; i < vl; ++i, IO += vs) {
-	  const R *W = ego->td->W;
+	  const TWR *W = ego->td->W;
 
 	  A(m % 2 == 1);
 	  for (k = 1, W += (m - 1) + 2*(mstart1-1); k < r; ++k) {
@@ -141,7 +141,7 @@ static void reorder_dif(const P *ego, R *IO)
 	  for (k = 1; k + k < r; ++k) {
 	       R *p0 = IO + k * ms;
 	       R *p1 = IO + (r - k) * ms;
-	       const R half = K(0.5);
+	       const TWR half = ((TWR)0.5);
 	       INT j;
 
 	       for (j = mstart1; j < mend1; ++j) {
@@ -161,7 +161,7 @@ static void reorder_dif(const P *ego, R *IO)
 
 static int applicable(rdft_kind kind, INT r, INT m, const planner *plnr)
 {
-     return (1 
+     return (1
 	     && (kind == R2HC || kind == HC2R)
 	     && (m % 2)
 	     && (r % 2)
@@ -226,13 +226,13 @@ static void destroy(plan *ego_)
 static void print(const plan *ego_, printer *p)
 {
      const P *ego = (const P *) ego_;
-     p->print(p, "(hc2hc-generic-%s-%D-%D%v%(%p%)%(%p%))", 
+     p->print(p, "(hc2hc-generic-%s-%D-%D%v%(%p%)%(%p%))",
 	      ego->super.apply == apply_dit ? "dit" : "dif",
 	      ego->r, ego->m, ego->vl, ego->cld0, ego->cld);
 }
 
-static plan *mkcldw(const hc2hc_solver *ego_, 
-		    rdft_kind kind, INT r, INT m, INT s, INT vl, INT vs, 
+static plan *mkcldw(const hc2hc_solver *ego_,
+		    rdft_kind kind, INT r, INT m, INT s, INT vl, INT vs,
 		    INT mstart, INT mcount,
 		    R *IO, planner *plnr)
 {
@@ -257,7 +257,7 @@ static plan *mkcldw(const hc2hc_solver *ego_,
      mstride = m - (mstart + mcount - 1) - mstart1;
 
      /* 0th (DC) transform (vl of these), if mstart == 0 */
-     cld0 = X(mkplan_d)(plnr, 
+     cld0 = X(mkplan_d)(plnr,
 			X(mkproblem_rdft_1_d)(
 			     mstart == 0 ? X(mktensor_1d)(r, m * s, m * s)
 			     : X(mktensor_0d)(),
@@ -269,16 +269,16 @@ static plan *mkcldw(const hc2hc_solver *ego_,
      /* twiddle transforms: there are 2 x mcount1 x vl of these
 	(where 2 corresponds to the real and imaginary parts) ...
         the 2 x mcount1 loops are combined if mstart=0 and mcount=(m+2)/2. */
-     cld = X(mkplan_d)(plnr, 
+     cld = X(mkplan_d)(plnr,
 			X(mkproblem_rdft_1_d)(
 			     X(mktensor_1d)(r, m * s, m * s),
 			     X(mktensor_3d)(2, mstride * s, mstride * s,
-					    mcount1, s, s, 
+					    mcount1, s, s,
 					    vl, vs, vs),
 			     IO + s * mstart1, IO + s * mstart1, kind)
 	                );
      if (!cld) goto nada;
-     
+
      pln = MKPLAN_HC2HC(P, &padt, (kind == R2HC) ? apply_dit : apply_dif);
      pln->cld = cld;
      pln->cld0 = cld0;

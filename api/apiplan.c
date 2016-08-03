@@ -19,6 +19,7 @@
  */
 
 #include "api.h"
+#include <iostream>
 
 static planner_hook_t before_planner_hook = 0, after_planner_hook = 0;
 
@@ -52,7 +53,7 @@ static plan *mkplan(planner *plnr, unsigned flags,
 		    const problem *prb, unsigned hash_info)
 {
      plan *pln;
-     
+
      pln = mkplan0(plnr, flags, prb, hash_info, WISDOM_NORMAL);
 
      if (plnr->wisdom_state == WISDOM_NORMAL && !pln) {
@@ -93,11 +94,13 @@ apiplan *X(mkapiplan)(int sign, unsigned flags, problem *prb)
                                          FFTW_PATIENT, FFTW_EXHAUSTIVE};
      int pat, pat_max;
      double pcost = 0;
-     
+
      if (before_planner_hook)
           before_planner_hook();
-     
+
      plnr = X(the_planner)();
+
+     //std::cout << "APIPLAN\n\n";
 
      if (flags & FFTW_WISDOM_ONLY) {
 	  /* Special mode that returns a plan only if wisdom is present,
@@ -118,7 +121,12 @@ apiplan *X(mkapiplan)(int sign, unsigned flags, problem *prb)
 
 	  /* plan at incrementally increasing patience until we run
 	     out of time */
+          //std::cout << "APIPLAN\n\n";
+
 	  for (pln = 0, flags_used_for_planning = 0; pat <= pat_max; ++pat) {
+
+              //std::cout << "APIPLAN xx\n\n";
+
 	       plan *pln1;
 	       unsigned tmpflags = flags | pats[pat];
 	       pln1 = mkplan(plnr, tmpflags, prb, 0u);
@@ -128,6 +136,7 @@ apiplan *X(mkapiplan)(int sign, unsigned flags, problem *prb)
 		    A(!pln || plnr->timed_out);
 		    break;
 	       }
+
 
 	       X(plan_destroy_internal)(pln);
 	       pln = pln1;
@@ -148,7 +157,7 @@ apiplan *X(mkapiplan)(int sign, unsigned flags, problem *prb)
 	  /* record pcost from most recent measurement for use in X(cost) */
 	  p->pln->pcost = pcost;
 
-	  if (sizeof(trigreal) > sizeof(R)) {
+	  if (1 || sizeof(trigreal) > sizeof(R)) {
 	       /* this is probably faster, and we have enough trigreal
 		  bits to maintain accuracy */
 	       X(plan_awake)(p->pln, AWAKE_SQRTN_TABLE);
@@ -172,7 +181,7 @@ apiplan *X(mkapiplan)(int sign, unsigned flags, problem *prb)
 
      if (after_planner_hook)
           after_planner_hook();
-     
+
      return p;
 }
 

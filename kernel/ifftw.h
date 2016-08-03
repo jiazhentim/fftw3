@@ -24,6 +24,7 @@
 #define __IFFTW_H__
 
 #include "config.h"
+#include "../../avx/vectorclass.h"
 
 #include <stdlib.h>		/* size_t */
 #include <stdarg.h>		/* va_list */
@@ -62,19 +63,21 @@ extern "C"
 /* determine precision and name-mangling scheme */
 #define CONCAT(prefix, name) prefix ## name
 #if defined(FFTW_SINGLE)
-  typedef float R;
-# define X(name) CONCAT(fftwf_, name)
+  typedef Vec16f R;
+  typedef float TWR;
+# define X(name) CONCAT(zfftwf_, name)
 #elif defined(FFTW_LDOUBLE)
-  typedef long double R;
-# define X(name) CONCAT(fftwl_, name)
+  typedef long Vec8d R;
+  typedef double TWR;
+# define X(name) CONCAT(zfftwl_, name)
 # define TRIGREAL_IS_LONG_DOUBLE
 #elif defined(FFTW_QUAD)
   typedef __float128 R;
-# define X(name) CONCAT(fftwq_, name)
+# define X(name) CONCAT(zfftwq_, name)
 # define TRIGREAL_IS_QUAD
 #else
   typedef double R;
-# define X(name) CONCAT(fftw_, name)
+# define X(name) CONCAT(zfftw_, name)
 #endif
 
 /*
@@ -134,13 +137,13 @@ typedef struct scanner_s scanner;
 #  if defined(HAVE_KCVI) || defined(HAVE_AVX512)
 #    define MIN_ALIGNMENT 64
 #  elif defined(HAVE_AVX) || defined(HAVE_AVX2) || defined(HAVE_GENERIC_SIMD256)
-#    define MIN_ALIGNMENT 32  /* best alignment for AVX, conservative for
+#    define MIN_ALIGNMENT 64  /* best alignment for AVX, conservative for
 			       * everything else */
 #  else
      /* Note that we cannot use 32-byte alignment for all SIMD.  For
 	example, MacOS X malloc is 16-byte aligned, but there was no
 	posix_memalign in MacOS X until version 10.6. */
-#    define MIN_ALIGNMENT 16
+#    define MIN_ALIGNMENT 64
 #  endif
 #endif
 
@@ -177,10 +180,10 @@ void *alloca(size_t);
          p = (T)(((uintptr_t)p + (MIN_ALIGNMENT - 1)) &	\
                (~(uintptr_t)(MIN_ALIGNMENT - 1)));		\
      }
-#    define STACK_FREE(n) 
+#    define STACK_FREE(n)
 #  else /* HAVE_ALLOCA && !defined(MIN_ALIGNMENT) */
-#    define STACK_MALLOC(T, p, n) p = (T)alloca(n) 
-#    define STACK_FREE(n) 
+#    define STACK_MALLOC(T, p, n) p = (T)alloca(n)
+#    define STACK_FREE(n)
 #  endif
 
 #else /* ! HAVE_ALLOCA */
@@ -234,15 +237,15 @@ void *alloca(size_t);
 /* We can do an optimization for copying pairs of (aligned) floats
    when in single precision if 2*float = double. */
 
-#define FFTW_2R_IS_DOUBLE (defined(FFTW_SINGLE) \
-                           && SIZEOF_FLOAT != 0 \
+#define FFTW_2R_IS_DOUBLE (defined(FFTW_SINGLE)                 \
+                           && 0 && SIZEOF_FLOAT != 0            \
                            && SIZEOF_DOUBLE == 2*SIZEOF_FLOAT)
 
 #define DOUBLE_ALIGNED(p) ((((uintptr_t)(p)) % sizeof(double)) == 0)
 
 /*-----------------------------------------------------------------------*/
 /* assert.c: */
-IFFTW_EXTERN void X(assertion_failed)(const char *s, 
+IFFTW_EXTERN void X(assertion_failed)(const char *s,
 				      int line, const char *file);
 
 /* always check */
@@ -309,8 +312,8 @@ extern int X(in_thread);
 #  define THREAD_OFF X(in_thread) = in_thread_save; }
 #else
 #  define IN_THREAD 0
-#  define THREAD_ON 
-#  define THREAD_OFF 
+#  define THREAD_ON
+#  define THREAD_OFF
 #endif
 
 /*-----------------------------------------------------------------------*/
@@ -443,7 +446,7 @@ typedef struct {
   Definition of rank -infinity.
   This definition has the property that if you want rank 0 or 1,
   you can simply test for rank <= 1.  This is a common case.
- 
+
   A tensor of rank -infinity has size 0.
 */
 #define RNK_MINFTY  INT_MAX
@@ -499,11 +502,11 @@ int X(tensor_inplace_locations)(const tensor *sz, const tensor *vecsz);
 
 /*-----------------------------------------------------------------------*/
 /* problem.c: */
-enum { 
+enum {
      /* a problem that cannot be solved */
      PROBLEM_UNSOLVABLE,
 
-     PROBLEM_DFT, 
+     PROBLEM_DFT,
      PROBLEM_RDFT,
      PROBLEM_RDFT2,
 
@@ -513,7 +516,7 @@ enum {
      PROBLEM_MPI_RDFT2,
      PROBLEM_MPI_TRANSPOSE,
 
-     PROBLEM_LAST 
+     PROBLEM_LAST
 };
 
 typedef struct {
@@ -543,7 +546,7 @@ struct printer_s {
      int indent_incr;
 };
 
-printer *X(mkprinter)(size_t size, 
+printer *X(mkprinter)(size_t size,
 		      void (*putchr)(printer *p, char c),
 		      void (*cleanup)(printer *p));
 IFFTW_EXTERN void X(printer_destroy)(printer *p);
@@ -624,12 +627,12 @@ typedef struct slvdesc_s {
 
 typedef struct solution_s solution; /* opaque */
 
-/* interpretation of L and U: 
+/* interpretation of L and U:
 
    - if it returns a plan, the planner guarantees that all applicable
      plans at least as impatient as U have been tried, and that each
      plan in the solution is at least as impatient as L.
-   
+
    - if it returns 0, the planner guarantees to have tried all solvers
      at least as impatient as L, and that none of them was applicable.
 
@@ -642,7 +645,7 @@ typedef struct {
 #    define BITS_FOR_TIMELIMIT 9
      unsigned timelimit_impatience:BITS_FOR_TIMELIMIT;
      unsigned u:20;
-     
+
      /* abstraction break: we store the solver here to pad the
 	structure to 64 bits.  Otherwise, the struct is padded to 64
 	bits anyway, and another word is allocated for slvndx. */
@@ -708,12 +711,12 @@ enum {
 
 typedef enum { FORGET_ACCURSED, FORGET_EVERYTHING } amnesia;
 
-typedef enum { 
+typedef enum {
      /* WISDOM_NORMAL: planner may or may not use wisdom */
-     WISDOM_NORMAL, 
+     WISDOM_NORMAL,
 
      /* WISDOM_ONLY: planner must use wisdom and must avoid searching */
-     WISDOM_ONLY, 
+     WISDOM_ONLY,
 
      /* WISDOM_IS_BOGUS: planner must return 0 as quickly as possible */
      WISDOM_IS_BOGUS,
@@ -749,7 +752,7 @@ typedef enum { COST_SUM, COST_MAX } cost_kind;
 
 struct planner_s {
      const planner_adt *adt;
-     void (*hook)(struct planner_s *plnr, plan *pln, 
+     void (*hook)(struct planner_s *plnr, plan *pln,
 		  const problem *p, int optimalp);
      double (*cost_hook)(const problem *p, double t, cost_kind k);
      int (*wisdom_ok_hook)(const problem *p, flags_t flags);
@@ -787,7 +790,7 @@ void X(planner_destroy)(planner *ego);
 
 /*
   Iterate over all solvers.   Read:
- 
+
   @article{ baker93iterators,
   author = "Henry G. Baker, Jr.",
   title = "Iterators: Signs of Weakness in Object-Oriented Languages",
@@ -821,7 +824,7 @@ void X(planner_destroy)(planner *ego);
 
 /* make plan, destroy problem */
 plan *X(mkplan_d)(planner *ego, problem *p);
-plan *X(mkplan_f_d)(planner *ego, problem *p, 
+plan *X(mkplan_f_d)(planner *ego, problem *p,
 		    unsigned l_set, unsigned u_set, unsigned u_reset);
 
 /*-----------------------------------------------------------------------*/
@@ -864,7 +867,7 @@ typedef INT stride;
    If we guess that there are more than
    ESTIMATED_AVAILABLE_INDEX_REGISTERS such pointers, we deliberately confuse
    the compiler by setting STRIDE ^= ZERO, where ZERO is a value guaranteed to
-   be 0, but the compiler does not know this. 
+   be 0, but the compiler does not know this.
 
    16 registers ought to be enough for anybody, or so the amd64 and ARM ISA's
    seem to imply.
@@ -893,7 +896,7 @@ int X(pickdim)(int which_dim, const int *buddies, size_t nbuddies,
 /*-----------------------------------------------------------------------*/
 /* twiddle.c */
 /* little language to express twiddle factors computation */
-enum { TW_COS = 0, TW_SIN = 1, TW_CEXP = 2, TW_NEXT = 3, 
+enum { TW_COS = 0, TW_SIN = 1, TW_CEXP = 2, TW_NEXT = 3,
        TW_FULL = 4, TW_HALF = 5 };
 
 typedef struct {
@@ -903,7 +906,7 @@ typedef struct {
 } tw_instr;
 
 typedef struct twid_s {
-     R *W;                     /* array of twiddle factors */
+     TWR *W;                     /* array of twiddle factors */
      INT n, r, m;                /* transform order, radix, # twiddle rows */
      int refcnt;
      const tw_instr *instr;
@@ -928,7 +931,7 @@ void X(twiddle_awake)(enum wakefulness wakefulness,
 typedef struct triggen_s triggen;
 
 struct triggen_s {
-     void (*cexp)(triggen *t, INT m, R *result);
+     void (*cexp)(triggen *t, INT m, TWR *result);
      void (*cexpl)(triggen *t, INT m, trigreal *result);
      void (*rotate)(triggen *p, INT m, R xr, R xi, R *res);
 
@@ -1003,11 +1006,11 @@ void X(cpy2d_co)(R *I, R *O,
 		 INT vl);
 void X(cpy2d_tiled)(R *I, R *O,
 		    INT n0, INT is0, INT os0,
-		    INT n1, INT is1, INT os1, 
+		    INT n1, INT is1, INT os1,
 		    INT vl);
 void X(cpy2d_tiledbuf)(R *I, R *O,
 		       INT n0, INT is0, INT os0,
-		       INT n1, INT is1, INT os1, 
+		       INT n1, INT is1, INT os1,
 		       INT vl);
 void X(cpy2d_pair)(R *I0, R *I1, R *O0, R *O1,
 		   INT n0, INT is0, INT os0,
@@ -1038,12 +1041,12 @@ double X(iestimate_cost)(const planner *, const plan *, const problem *);
 extern unsigned X(random_estimate_seed);
 #endif
 
-double X(measure_execution_time)(const planner *plnr, 
+double X(measure_execution_time)(const planner *plnr,
 				 plan *pln, const problem *p);
 IFFTW_EXTERN int X(ialignment_of)(R *p);
 unsigned X(hash)(const char *s);
 INT X(nbuf)(INT n, INT vl, INT maxnbuf);
-int X(nbuf_redundant)(INT n, INT vl, size_t which, 
+int X(nbuf_redundant)(INT n, INT vl, size_t which,
 		      const INT *maxnbuf, size_t nmaxnbuf);
 INT X(bufdist)(INT n, INT vl);
 int X(toobig)(INT n);
@@ -1069,7 +1072,7 @@ R *X(join_taint)(R *p1, R *p2);
      CK(!(((uintptr_t) &__foo) & 0x7));		\
 }
 #else
-#  define ASSERT_ALIGNED_DOUBLE 
+#  define ASSERT_ALIGNED_DOUBLE
 #endif /* FFTW_DEBUG_ALIGNMENT */
 
 
@@ -1084,9 +1087,9 @@ typedef R E;  /* internal precision of codelets. */
 #elif defined(FFTW_QUAD)
 #  define K(x) ((E) x##Q)
 #else
-#  define K(x) ((E) x)
+#  define K(x) ((float) x)
 #endif
-#define DK(name, value) const E name = K(value)
+#define DK(name, value) const float name = ((float) value)
 
 /* FMA macros */
 
@@ -1108,7 +1111,7 @@ typedef R E;  /* internal precision of codelets. */
 
      asm ("# confuse gcc %0" : "=f"(a) : "0"(a));
      return a * b + c;
-     
+
    in each of the FMA, FMS, FNMA, and FNMS functions.  However, this
    does not solve the problem either, because two equal asm statements
    count as a common subexpression!  One must use *different* fake asm

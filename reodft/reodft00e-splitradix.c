@@ -55,7 +55,7 @@ static void apply_e(const plan *ego_, R *I, R *O)
      INT i, j, n = ego->n + 1, n2 = (n-1)/2;
      INT iv, vl = ego->vl;
      INT ivs = ego->ivs, ovs = ego->ovs;
-     R *W = ego->td->W - 2;
+     TWR *W = ego->td->W - 2;
      R *buf;
 
      buf = (R *) MALLOC(sizeof(R) * n2, BUFFERS);
@@ -132,7 +132,7 @@ static void apply_o(const plan *ego_, R *I, R *O)
      INT i, j, n = ego->n - 1, n2 = (n+1)/2;
      INT iv, vl = ego->vl;
      INT ivs = ego->ivs, ovs = ego->ovs;
-     R *W = ego->td->W - 2;
+     TWR *W = ego->td->W - 2;
      R *buf;
 
      buf = (R *) MALLOC(sizeof(R) * n2, BUFFERS);
@@ -217,7 +217,7 @@ static void awake(plan *ego_, enum wakefulness wakefulness)
 
      X(plan_awake)(ego->clde, wakefulness);
      X(plan_awake)(ego->cldo, wakefulness);
-     X(twiddle_awake)(wakefulness, &ego->td, reodft00e_tw, 
+     X(twiddle_awake)(wakefulness, &ego->td, reodft00e_tw,
 		      2*ego->n, 1, ego->n/4);
 }
 
@@ -232,10 +232,10 @@ static void print(const plan *ego_, printer *p)
 {
      const P *ego = (const P *) ego_;
      if (ego->super.apply == apply_e)
-	  p->print(p, "(redft00e-splitradix-%D%v%(%p%)%(%p%))", 
+	  p->print(p, "(redft00e-splitradix-%D%v%(%p%)%(%p%))",
 		   ego->n + 1, ego->vl, ego->clde, ego->cldo);
      else
-	  p->print(p, "(rodft00e-splitradix-%D%v%(%p%)%(%p%))", 
+	  p->print(p, "(rodft00e-splitradix-%D%v%(%p%)%(%p%))",
 		   ego->n - 1, ego->vl, ego->clde, ego->cldo);
 }
 
@@ -252,7 +252,7 @@ static int applicable0(const solver *ego_, const problem *p_)
 	     && p->sz->dims[0].n % 2  /* odd: 4 divides "logical" DFT */
 	     && (p->I != p->O || p->vecsz->rnk == 0
 		 || p->vecsz->dims[0].is == p->vecsz->dims[0].os)
-	     && (p->kind[0] != RODFT00 || p->I != p->O || 
+	     && (p->kind[0] != RODFT00 || p->I != p->O ||
 		 p->sz->dims[0].is >= p->sz->dims[0].os) /* laziness */
 	  );
 }
@@ -287,11 +287,11 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
 
      inplace_odd = p->kind[0]==RODFT00 && p->I == p->O;
      clde = X(mkplan_d)(plnr, X(mkproblem_rdft_1_d)(
-			     X(mktensor_1d)(n0-n/2, 2*p->sz->dims[0].is, 
+			     X(mktensor_1d)(n0-n/2, 2*p->sz->dims[0].is,
 					    inplace_odd ? p->sz->dims[0].is
-					    : p->sz->dims[0].os), 
-			     X(mktensor_0d)(), 
-			     TAINT(p->I 
+					    : p->sz->dims[0].os),
+			     X(mktensor_0d)(),
+			     TAINT(p->I
 				   + p->sz->dims[0].is * (p->kind[0]==RODFT00),
 				   p->vecsz->rnk ? p->vecsz->dims[0].is : 0),
 			     TAINT(p->O
@@ -304,8 +304,8 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
      }
 
      cldo = X(mkplan_d)(plnr, X(mkproblem_rdft_1_d)(
-			     X(mktensor_1d)(n/2, 1, 1), 
-			     X(mktensor_0d)(), 
+			     X(mktensor_1d)(n/2, 1, 1),
+			     X(mktensor_0d)(),
 			     buf, buf, R2HC));
      X(ifree)(buf);
      if (!cldo)
@@ -321,7 +321,7 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
      pln->td = 0;
 
      X(tensor_tornk1)(p->vecsz, &pln->vl, &pln->ivs, &pln->ovs);
-     
+
      X(ops_zero)(&ops);
      ops.other = n/2;
      ops.add = (p->kind[0]==REDFT00 ? (INT)2 : (INT)0) +

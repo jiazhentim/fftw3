@@ -21,6 +21,8 @@
 #include "api.h"
 #include "rdft.h"
 
+#include <iostream>
+
 X(plan) X(plan_many_dft_r2c)(int rank, const int *n,
 			     int howmany,
 			     R *in, const int *inembed,
@@ -33,19 +35,25 @@ X(plan) X(plan_many_dft_r2c)(int rank, const int *n,
      int inplace;
      X(plan) p;
 
+     //exit(0);
+
+     //std::cout << "plan_many_dft_r2c\n\n";
+
      if (!X(many_kosherp)(rank, n, howmany)) return 0;
+
+     //std::cout << "plan_many_dft_r2c\n\n";
 
      EXTRACT_REIM(FFT_SIGN, out, &ro, &io);
      inplace = in == ro;
 
      p = X(mkapiplan)(
-	  0, flags, 
+	  0, flags,
 	  X(mkproblem_rdft2_d_3pointers)(
 	       X(mktensor_rowmajor)(
 		    rank, n,
 		    X(rdft2_pad)(rank, n, inembed, inplace, 0, &nfi),
 		    X(rdft2_pad)(rank, n, onembed, inplace, 1, &nfo),
-		    istride, 2 * ostride), 
+		    istride, 2 * ostride),
 	       X(mktensor_1d)(howmany, idist, 2 * odist),
 	       TAINT_UNALIGNED(in, flags),
 	       TAINT_UNALIGNED(ro, flags), TAINT_UNALIGNED(io, flags),
@@ -54,4 +62,10 @@ X(plan) X(plan_many_dft_r2c)(int rank, const int *n,
      X(ifree0)(nfi);
      X(ifree0)(nfo);
      return p;
+}
+
+void just_say_it(int x)
+{
+    //fa;
+    printf("SAY: %d\n", x);
 }

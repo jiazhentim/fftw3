@@ -64,14 +64,14 @@ static int equal_instr(const tw_instr *p, const tw_instr *q)
      A(0 /* can't happen */);
 }
 
-static int ok_twid(const twid *t, 
+static int ok_twid(const twid *t,
 		   enum wakefulness wakefulness,
 		   const tw_instr *q, INT n, INT r, INT m)
 {
      return (wakefulness == t->wakefulness &&
 	     n == t->n &&
-	     r == t->r && 
-	     m <= t->m && 
+	     r == t->r &&
+	     m <= t->m &&
 	     equal_instr(t->instr, q));
 }
 
@@ -80,8 +80,8 @@ static twid *lookup(enum wakefulness wakefulness,
 {
      twid *p;
 
-     for (p = twlist[hash(n,r)]; 
-	  p && !ok_twid(p, wakefulness, q, n, r, m); 
+     for (p = twlist[hash(n,r)];
+	  p && !ok_twid(p, wakefulness, q, n, r, m);
 	  p = p->cdr)
           ;
      return p;
@@ -121,11 +121,11 @@ INT X(twiddle_length)(INT r, const tw_instr *p)
      return twlen0(r, p, &vl);
 }
 
-static R *compute(enum wakefulness wakefulness,
-		  const tw_instr *instr, INT n, INT r, INT m)
+static TWR *compute(enum wakefulness wakefulness,
+                    const tw_instr *instr, INT n, INT r, INT m)
 {
      INT ntwiddle, j, vl;
-     R *W, *W0;
+     TWR *W, *W0;
      const tw_instr *p;
      triggen *t = X(mktriggen)(wakefulness, n);
 
@@ -134,7 +134,7 @@ static R *compute(enum wakefulness wakefulness,
 
      A(m % vl == 0);
 
-     W0 = W = (R *)MALLOC((ntwiddle * (m / vl)) * sizeof(R), TWIDDLES);
+     W0 = W = (TWR *)MALLOC((ntwiddle * (m / vl)) * sizeof(TWR), TWIDDLES);
 
      for (j = 0; j < m; j += vl) {
           for (p = instr; p->op != TW_NEXT; ++p) {
@@ -161,7 +161,7 @@ static R *compute(enum wakefulness wakefulness,
 		   }
 
 		   case TW_COS: {
-			R d[2];
+			TWR d[2];
 
 			A((j + (INT)p->v) * p->i < n);
 			A((j + (INT)p->v) * p->i > -n);
@@ -171,7 +171,7 @@ static R *compute(enum wakefulness wakefulness,
 		   }
 
 		   case TW_SIN: {
-			R d[2];
+			TWR d[2];
 
 			A((j + (INT)p->v) * p->i < n);
 			A((j + (INT)p->v) * p->i > -n);
@@ -242,11 +242,11 @@ static void twiddle_destroy(twid **pp)
 }
 
 
-void X(twiddle_awake)(enum wakefulness wakefulness, twid **pp, 
+void X(twiddle_awake)(enum wakefulness wakefulness, twid **pp,
 		      const tw_instr *instr, INT n, INT r, INT m)
 {
      switch (wakefulness) {
-	 case SLEEPY: 
+	 case SLEEPY:
 	      twiddle_destroy(pp);
 	      break;
 	 default:

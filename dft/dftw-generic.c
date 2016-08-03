@@ -54,7 +54,7 @@ static void bytwiddle(const P *ego, R *rio, R *iio)
      INT r = ego->r, rs = ego->rs;
      INT m = ego->m, mb = ego->mb, me = ego->me, ms = ego->ms;
      INT v = ego->v, vs = ego->vs;
-     const R *W = ego->td->W;
+     const TWR *W = ego->td->W;
 
      mb += (mb == 0); /* skip m=0 iteration */
      for (iv = 0; iv < v; ++iv) {

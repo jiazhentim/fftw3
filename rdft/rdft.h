@@ -95,10 +95,10 @@ void X(hc2hc_generic_register)(planner *p);
 
 /****************************************************************************/
 /* problem2.c: */
-/* 
+/*
    An RDFT2 problem transforms a 1d real array r[n] with stride is/os
    to/from an "unpacked" complex array {rio,iio}[n/2 + 1] with stride
-   os/is.  R0 points to the first even element of the real array.  
+   os/is.  R0 points to the first even element of the real array.
    R1 points to the first odd element of the real array.
 
    Strides on the real side of the transform express distances
@@ -110,9 +110,9 @@ void X(hc2hc_generic_register)(planner *p);
    the input stride would be 2, not 1.  This convention is necessary
    for hc2c codelets to work, since they transpose even/odd with
    real/imag.
-   
+
    Multidimensional transforms use complex DFTs for the
-   noncontiguous dimensions.  vecsz has the usual interpretation.  
+   noncontiguous dimensions.  vecsz has the usual interpretation.
 */
 typedef struct {
      problem super;

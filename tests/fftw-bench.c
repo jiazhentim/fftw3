@@ -135,7 +135,7 @@ void rdwisdom(void)
 
      if (success) {
 	  if (verbose > 1) printf("READ WISDOM (%g seconds): ", tim);
-	  
+
 	  if (verbose > 3)
 	       export_wisdom(stdout);
 	  if (verbose > 1)
@@ -165,9 +165,9 @@ static unsigned preserve_input_flags(bench_problem *p)
       * fftw3 cannot preserve input for multidimensional c2r transforms.
       * Enforce FFTW_DESTROY_INPUT
       */
-     if (p->kind == PROBLEM_REAL && 
-	 p->sign > 0 && 
-	 !p->in_place && 
+     if (p->kind == PROBLEM_REAL &&
+	 p->sign > 0 &&
+	 !p->in_place &&
 	 p->sz->rnk > 1)
 	  p->destroy_input = 1;
 
@@ -202,7 +202,7 @@ void setup(bench_problem *p)
      double tim;
 
      setup_sigfpe_handler();
-     
+
      if (amnesia) {
 	  FFTW(forget_wisdom)();
 	  havewisdom = 0;
@@ -212,7 +212,7 @@ void setup(bench_problem *p)
       * properly */
      {
           void *ptr = FFTW(malloc(42));
-          BENCH_ASSERT(FFTW(alignment_of)(ptr) == 0);
+          //BENCH_ASSERT(FFTW(alignment_of)(ptr) == 0);
           FFTW(free(ptr));
      }
 
@@ -252,7 +252,7 @@ void doit(int iter, bench_problem *p)
      FFTW(plan) q = the_plan;
 
      UNUSED(p);
-     for (i = 0; i < iter; ++i) 
+     for (i = 0; i < iter; ++i)
 	  FFTW(execute)(q);
 }
 

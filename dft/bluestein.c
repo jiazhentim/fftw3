@@ -28,13 +28,13 @@ typedef struct {
      plan_dft super;
      INT n;     /* problem size */
      INT nb;    /* size of convolution */
-     R *w;      /* lambda k . exp(2*pi*i*k^2/(2*n)) */
+     TWR *w;      /* lambda k . exp(2*pi*i*k^2/(2*n)) */
      R *W;      /* DFT(w) */
      plan *cldf;
      INT is, os;
 } P;
 
-static void bluestein_sequence(enum wakefulness wakefulness, INT n, R *w)
+static void bluestein_sequence(enum wakefulness wakefulness, INT n, TWR *w)
 {
      INT k, ksq, n2 = 2 * n;
      triggen *t = X(mktriggen)(wakefulness, n2);
@@ -53,10 +53,11 @@ static void mktwiddle(enum wakefulness wakefulness, P *p)
 {
      INT i;
      INT n = p->n, nb = p->nb;
-     R *w, *W;
-     E nbf = (E)nb;
+     TWR *w;
+     R *W;
+     TWR nbf = (TWR)nb;
 
-     p->w = w = (R *) MALLOC(2 * n * sizeof(R), TWIDDLES);
+     p->w = w = (TWR *) MALLOC(2 * n * sizeof(TWR), TWIDDLES);
      p->W = W = (R *) MALLOC(2 * nb * sizeof(R), TWIDDLES);
 
      bluestein_sequence(wakefulness, n, w);
@@ -83,7 +84,8 @@ static void apply(const plan *ego_, R *ri, R *ii, R *ro, R *io)
 {
      const P *ego = (const P *) ego_;
      INT i, n = ego->n, nb = ego->nb, is = ego->is, os = ego->os;
-     R *w = ego->w, *W = ego->W;
+     TWR *w = ego->w;
+     R *W = ego->W;
      R *b = (R *) MALLOC(2 * nb * sizeof(R), BUFFERS);
 
      /* multiply input by conjugate bluestein sequence */
@@ -124,7 +126,7 @@ static void apply(const plan *ego_, R *ri, R *ii, R *ro, R *io)
           io[i*os] = xi * wr - xr * wi;
      }
 
-     X(ifree)(b);	  
+     X(ifree)(b);
 }
 
 static void awake(plan *ego_, enum wakefulness wakefulness)
@@ -145,7 +147,7 @@ static void awake(plan *ego_, enum wakefulness wakefulness)
      }
 }
 
-static int applicable(const solver *ego, const problem *p_, 
+static int applicable(const solver *ego, const problem *p_,
 		      const planner *plnr)
 {
      const problem_dft *p = (const problem_dft *) p_;
@@ -203,10 +205,10 @@ static plan *mkplan(const solver *ego, const problem *p_, planner *plnr)
      nb = choose_transform_size(2 * n - 1);
      buf = (R *) MALLOC(2 * nb * sizeof(R), BUFFERS);
 
-     cldf = X(mkplan_f_d)(plnr, 
+     cldf = X(mkplan_f_d)(plnr,
 			  X(mkproblem_dft_d)(X(mktensor_1d)(nb, 2, 2),
 					     X(mktensor_1d)(1, 0, 0),
-					     buf, buf+1, 
+					     buf, buf+1,
 					     buf, buf+1),
 			  NO_SLOW, 0, 0);
      if (!cldf) goto nada;

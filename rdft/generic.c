@@ -34,7 +34,7 @@ typedef struct {
 
 /***************************************************************************/
 
-static void cdot_r2hc(INT n, const E *x, const R *w, R *or0, R *oi1)
+static void cdot_r2hc(INT n, const E *x, const TWR *w, R *or0, R *oi1)
 {
      INT i;
 
@@ -68,13 +68,13 @@ static void hartley_r2hc(INT n, const R *xr, INT xs, E *o, R *pr)
      }
      *pr = sr;
 }
-		    
+
 static void apply_r2hc(const plan *ego_, R *I, R *O)
 {
      const P *ego = (const P *) ego_;
      INT i;
      INT n = ego->n, is = ego->is, os = ego->os;
-     const R *W = ego->td->W;
+     const TWR *W = ego->td->W;
      E *buf;
      size_t bufsz = n * sizeof(E);
 
@@ -82,7 +82,7 @@ static void apply_r2hc(const plan *ego_, R *I, R *O)
      hartley_r2hc(n, I, is, buf, O);
 
      for (i = 1; i + i < n; ++i) {
-	  cdot_r2hc(n, buf, W, O + i * os, O + (n - i) * os);
+          cdot_r2hc(n, buf, W, O + i * os, O + (n - i) * os);
 	  W += n - 1;
      }
 
@@ -90,11 +90,11 @@ static void apply_r2hc(const plan *ego_, R *I, R *O)
 }
 
 
-static void cdot_hc2r(INT n, const E *x, const R *w, R *or0, R *or1)
+static void cdot_hc2r(INT n, const E *x, const TWR *w, R *or0, R *or1)
 {
      INT i;
 
-     E rr = x[0], ii = 0; 
+     E rr = x[0], ii = 0;
      x += 1;
      for (i = 1; i + i < n; ++i) {
 	  rr += x[0] * w[0];
@@ -124,12 +124,12 @@ static void hartley_hc2r(INT n, const R *x, INT xs, E *o, R *pr)
      *pr = sr;
 }
 
-static void apply_hc2r(const plan *ego_, R *I, R *O)		    
+static void apply_hc2r(const plan *ego_, R *I, R *O)
 {
      const P *ego = (const P *) ego_;
      INT i;
      INT n = ego->n, is = ego->is, os = ego->os;
-     const R *W = ego->td->W;
+     const TWR *W = ego->td->W;
      E *buf;
      size_t bufsz = n * sizeof(E);
 
@@ -163,19 +163,19 @@ static void print(const plan *ego_, printer *p)
 {
      const P *ego = (const P *) ego_;
 
-     p->print(p, "(rdft-generic-%s-%D)", 
-	      ego->kind == R2HC ? "r2hc" : "hc2r", 
+     p->print(p, "(rdft-generic-%s-%D)",
+	      ego->kind == R2HC ? "r2hc" : "hc2r",
 	      ego->n);
 }
 
-static int applicable(const S *ego, const problem *p_, 
+static int applicable(const S *ego, const problem *p_,
 		      const planner *plnr)
 {
      const problem_rdft *p = (const problem_rdft *) p_;
      return (1
 	     && p->sz->rnk == 1
 	     && p->vecsz->rnk == 0
-	     && (p->sz->dims[0].n % 2) == 1 
+	     && (p->sz->dims[0].n % 2) == 1
 	     && CIMPLIES(NO_LARGE_GENERICP(plnr), p->sz->dims[0].n < GENERIC_MIN_BAD)
 	     && CIMPLIES(NO_SLOWP(plnr), p->sz->dims[0].n > GENERIC_MAX_SLOW)
 	     && X(is_prime)(p->sz->dims[0].n)
@@ -198,7 +198,7 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
           return (plan *)0;
 
      p = (const problem_rdft *) p_;
-     pln = MKPLAN_RDFT(P, &padt, 
+     pln = MKPLAN_RDFT(P, &padt,
 		       R2HC_KINDP(p->kind[0]) ? apply_r2hc : apply_hc2r);
 
      pln->n = n = p->sz->dims[0].n;

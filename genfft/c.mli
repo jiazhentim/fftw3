@@ -19,7 +19,7 @@
  *
  *)
 
-type stride = 
+type stride =
   | SVar of string
   | SConst of string
   | SInteger of int
@@ -34,9 +34,11 @@ val realtype : string
 val realtypep : string
 val constrealtype : string
 val constrealtypep : string
+val twiddletype : string
+val twiddletypep : string
 val stridetype : string
 
-type c_decl = 
+type c_decl =
   | Decl of string * string
   | Tdecl of string                (* arbitrary text declaration *)
 

@@ -63,13 +63,14 @@ static void apply(const plan *ego_, R *I, R *O)
      INT npad = ego->npad; /* == n - 1 for unpadded Rader; always even */
      INT is = ego->is, os;
      INT k, gpower, g;
-     R *buf, *omega;
+     R *buf;
+     R *omega;
      R r0;
 
      buf = (R *) MALLOC(sizeof(R) * npad, BUFFERS);
 
      /* First, permute the input, storing in buf: */
-     g = ego->g; 
+     g = ego->g;
      for (gpower = 1, k = 0; k < n - 1; ++k, gpower = MULMOD(gpower, g, n)) {
 	  buf[k] = I[gpower * is];
      }
@@ -112,7 +113,7 @@ static void apply(const plan *ego_, R *I, R *O)
      /* Nyquist component: */
      A(k + k == npad); /* since npad is even */
      buf[k] *= omega[k];
-     
+
      /* this will add input[0] to all of the outputs after the ifft */
      buf[0] += r0;
 
@@ -163,7 +164,7 @@ static R *mkomega(enum wakefulness wakefulness,
      trigreal scale;
      triggen *t;
 
-     if ((omega = X(rader_tl_find)(n, npad + 1, ginv, omegas))) 
+     if ((omega = X(rader_tl_find)(n, npad + 1, ginv, omegas)))
 	  return omega;
 
      omega = (R *)MALLOC(sizeof(R) * npad, TWIDDLES);
@@ -219,7 +220,7 @@ static void awake(plan *ego_, enum wakefulness wakefulness)
 	      A(MULMOD(ego->g, ego->ginv, ego->n) == 1);
 
 	      A(!ego->omega);
-	      ego->omega = mkomega(wakefulness, 
+	      ego->omega = mkomega(wakefulness,
 				   ego->cld_omega,ego->n,ego->npad,ego->ginv);
 	      break;
      }
@@ -305,7 +306,7 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
      /* initial allocation for the purpose of planning */
      buf = (R *) MALLOC(sizeof(R) * npad, BUFFERS);
 
-     cld1 = X(mkplan_f_d)(plnr, 
+     cld1 = X(mkplan_f_d)(plnr,
 			  X(mkproblem_rdft_1_d)(X(mktensor_1d)(npad, 1, 1),
 						X(mktensor_1d)(1, 0, 0),
 						buf, buf,
@@ -317,7 +318,7 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
           X(mkproblem_rdft_1_d)(
                X(mktensor_1d)(npad, 1, 1),
                X(mktensor_1d)(1, 0, 0),
-	       buf, buf, 
+	       buf, buf,
 #if R2HC_ONLY_CONV
 	       R2HC
 #else
@@ -328,7 +329,7 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
 	  goto nada;
 
      /* plan for omega */
-     cld_omega = X(mkplan_f_d)(plnr, 
+     cld_omega = X(mkplan_f_d)(plnr,
 			       X(mkproblem_rdft_1_d)(
 				    X(mktensor_1d)(npad, 1, 1),
 				    X(mktensor_1d)(1, 0, 0),

@@ -31,12 +31,12 @@ typedef struct {
 } P;
 
 
-static void cdot(INT n, const E *x, const R *w, 
+static void cdot(INT n, const E *x, const TWR *w,
 		 R *or0, R *oi0, R *or1, R *oi1)
 {
      INT i;
 
-     E rr = x[0], ri = 0, ir = x[1], ii = 0; 
+     E rr = x[0], ri = 0, ir = x[1], ii = 0;
      x += 2;
      for (i = 1; i + i < n; ++i) {
 	  rr += x[0] * w[0];
@@ -67,13 +67,13 @@ static void hartley(INT n, const R *xr, const R *xi, INT xs, E *o,
      *pr = sr;
      *pi = si;
 }
-		    
+
 static void apply(const plan *ego_, R *ri, R *ii, R *ro, R *io)
 {
      const P *ego = (const P *) ego_;
      INT i;
      INT n = ego->n, is = ego->is, os = ego->os;
-     const R *W = ego->td->W;
+     const TWR *W = ego->td->W;
      E *buf;
      size_t bufsz = n * 2 * sizeof(E);
 
@@ -109,7 +109,7 @@ static void print(const plan *ego_, printer *p)
      p->print(p, "(dft-generic-%D)", ego->n);
 }
 
-static int applicable(const solver *ego, const problem *p_, 
+static int applicable(const solver *ego, const problem *p_,
 		      const planner *plnr)
 {
      const problem_dft *p = (const problem_dft *) p_;
@@ -118,7 +118,7 @@ static int applicable(const solver *ego, const problem *p_,
      return (1
 	     && p->sz->rnk == 1
 	     && p->vecsz->rnk == 0
-	     && (p->sz->dims[0].n % 2) == 1 
+	     && (p->sz->dims[0].n % 2) == 1
 	     && CIMPLIES(NO_LARGE_GENERICP(plnr), p->sz->dims[0].n < GENERIC_MIN_BAD)
 	     && CIMPLIES(NO_SLOWP(plnr), p->sz->dims[0].n > GENERIC_MAX_SLOW)
 	     && X(is_prime)(p->sz->dims[0].n)

@@ -21,7 +21,7 @@
 #include "ifftw.h"
 
 /*
-  common routines for Rader solvers 
+  common routines for Rader solvers
 */
 
 
@@ -30,7 +30,7 @@ struct rader_tls {
      INT k1, k2, k3;
      R *W;
      int refcnt;
-     rader_tl *cdr; 
+     rader_tl *cdr;
 };
 
 void X(rader_tl_insert)(INT k1, INT k2, INT k3, R *W, rader_tl **tl)
@@ -47,7 +47,7 @@ R *X(rader_tl_find)(INT k1, INT k2, INT k3, rader_tl *t)
      if (t) {
 	  ++t->refcnt;
 	  return t->W;
-     } else 
+     } else
 	  return 0;
 }
 
