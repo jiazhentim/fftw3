@@ -10,13 +10,13 @@ to_alist.ml trig.ml twiddle.ml unique.ml util.ml variable.ml		\
 algsimp.mli annotate.mli assoctable.mli c.mli complex.mli conv.mli	\
 dag.mli expr.mli fft.mli littlesimp.mli number.mli oracle.mli		\
 schedule.mli simd.mli to_alist.mli trig.mli twiddle.mli unique.mli	\
-util.mli variable.mli
+util.mli variable.mli gen_notw_k.ml
 
 GENFFT_NATIVE=gen_notw.native gen_notw_c.native gen_twiddle.native	\
 gen_twiddle_c.native gen_twidsq.native gen_twidsq_c.native		\
 gen_r2r.native gen_r2cf.native gen_r2cb.native gen_hc2c.native		\
 gen_hc2cdft.native gen_hc2cdft_c.native gen_hc2hc.native		\
-gen_mdct.native
+gen_mdct.native gen_notw_k.native
 
 all-local::
 	$(OCAMLBUILD) -classic-display -libs unix,nums $(GENFFT_NATIVE)

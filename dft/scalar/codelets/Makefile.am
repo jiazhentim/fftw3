@@ -18,14 +18,16 @@ noinst_LTLIBRARIES = libdft_scalar_codelets.la
 ###########################################################################
 # n1_<n> is a hard-coded FFT of size <n> (base cases of FFT recursion)
 N1 = n1_2.c n1_3.c n1_4.c n1_5.c n1_6.c n1_7.c n1_8.c n1_9.c n1_10.c	\
-n1_11.c n1_12.c n1_13.c n1_14.c n1_15.c n1_16.c n1_32.c n1_64.c \
-n1_20.c n1_25.c # n1_30.c n1_40.c n1_50.c
+n1_11.c n1_12.c n1_13.c n1_14.c n1_15.c n1_16.c n1_17.c n1_18.c n1_19.c n1_20.c     \
+n1_21.c n1_22.c n1_23.c n1_24.c n1_25.c n1_26.c n1_27.c n1_28.c n1_29.c n1_30.c     \
+n1_32.c n1_35.c n1_40.c n1_45.c n1_50.c n1_55.c n1_60.c n1_64.c
 
 ###########################################################################
 # t1_<r> is a "twiddle" FFT of size <r>, implementing a radix-r DIT step
-T1 = t1_2.c t1_3.c t1_4.c t1_5.c t1_6.c t1_7.c t1_8.c t1_9.c	\
-t1_10.c t1_12.c t1_15.c t1_16.c t1_32.c t1_64.c \
-t1_20.c t1_25.c # t1_30.c t1_40.c t1_50.c
+T1 = t1_2.c t1_3.c t1_4.c t1_5.c t1_6.c t1_7.c t1_8.c t1_9.c t1_10.c	\
+t1_11.c t1_12.c t1_13.c t1_14.c t1_15.c t1_16.c t1_17.c t1_18.c t1_19.c t1_20.c     \
+t1_21.c t1_22.c t1_23.c t1_24.c t1_25.c t1_26.c t1_27.c t1_28.c t1_29.c t1_30.c     \
+t1_32.c t1_35.c t1_40.c t1_45.c t1_50.c t1_55.c t1_60.c t1_64.c
 
 # t2_<r> is also a twiddle FFT, but instead of using a complete lookup table
 # of trig. functions, it partially generates the trig. values on the fly
